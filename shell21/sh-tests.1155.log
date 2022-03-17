@@ -1,0 +1,116 @@
+>>> Test: "TestShellSimple.test_exitcode_1"
+# true &
+[1] running 'true'
+[1] exited 'true', status=0
+jobs
+false &
+# # [1] running 'false'
+[1] exited 'false', status=1
+jobs
+exit
+
+>>> Test: "TestShellSimple.test_fd_leaks"
+# ls -l /proc/self/fd
+total 0
+lrwx------ 1 jakshas jakshas 64 Dec  4 14:51 0 -> /dev/pts/2
+lrwx------ 1 jakshas jakshas 64 Dec  4 14:51 1 -> /dev/pts/2
+lrwx------ 1 jakshas jakshas 64 Dec  4 14:51 2 -> /dev/pts/2
+lr-x------ 1 jakshas jakshas 64 Dec  4 14:51 3 -> /proc/1172/fd
+# ls -l /proc/self/fd | cat
+total 0
+lrwx------ 1 jakshas jakshas 64 Dec  4 14:51 0 -> /dev/pts/2
+l-wx------ 1 jakshas jakshas 64 Dec  4 14:51 1 -> pipe:[16273]
+lrwx------ 1 jakshas jakshas 64 Dec  4 14:51 2 -> /dev/pts/2
+lr-x------ 1 jakshas jakshas 64 Dec  4 14:51 3 -> /proc/1173/fd
+# true | ls -l /proc/self/fd
+total 0
+lr-x------ 1 jakshas jakshas 64 Dec  4 14:51 0 -> 'pipe:[16274]'
+lrwx------ 1 jakshas jakshas 64 Dec  4 14:51 1 -> /dev/pts/2
+lrwx------ 1 jakshas jakshas 64 Dec  4 14:51 2 -> /dev/pts/2
+lr-x------ 1 jakshas jakshas 64 Dec  4 14:51 3 -> /proc/1176/fd
+# true | ls -l /proc/self/fd | cat
+total 0
+lr-x------ 1 jakshas jakshas 64 Dec  4 14:51 0 -> pipe:[16275]
+l-wx------ 1 jakshas jakshas 64 Dec  4 14:51 1 -> pipe:[16276]
+lrwx------ 1 jakshas jakshas 64 Dec  4 14:51 2 -> /dev/pts/2
+lr-x------ 1 jakshas jakshas 64 Dec  4 14:51 3 -> /proc/1178/fd
+# ls -l /proc/1171/fd
+total 0
+lrwx------ 1 jakshas jakshas 64 Dec  4 14:51 0 -> /dev/pts/2
+lrwx------ 1 jakshas jakshas 64 Dec  4 14:51 1 -> /dev/pts/2
+lrwx------ 1 jakshas jakshas 64 Dec  4 14:51 2 -> /dev/pts/2
+lrwx------ 1 jakshas jakshas 64 Dec  4 14:51 3 -> /dev/pts/2
+# exit
+
+>>> Test: "TestShellSimple.test_kill_at_quit"
+# sleep 1000 &
+[1] running 'sleep 1000'
+# sleep 2000 &
+[2] running 'sleep 2000'
+jobs
+# [1] running 'sleep 1000'
+[2] running 'sleep 2000'
+# 
+[1] killed 'sleep 1000' by signal 15
+[2] killed 'sleep 2000' by signal 15
+exit
+
+>>> Test: "TestShellSimple.test_kill_jobs"
+# sleep 1000 &
+[1] running 'sleep 1000'
+# sleep 2000 &
+[2] running 'sleep 2000'
+jobs
+# [1] running 'sleep 1000'
+[2] running 'sleep 2000'
+# kill %2
+jobs
+# [1] running 'sleep 1000'
+[2] killed 'sleep 2000' by signal 15
+# kill %1
+jobs
+# [1] killed 'sleep 1000' by signal 15
+# exit
+
+>>> Test: "TestShellSimple.test_kill_suspended"
+# cat &
+[1] running 'cat'
+# jobs
+[1] suspended 'cat'
+# pkill -9 cat
+[1] killed 'cat' by signal 9
+# exit
+
+>>> Test: "TestShellSimple.test_pipeline_1"
+# grep LIST include/queue.h | wc -l
+46
+# exit
+
+>>> Test: "TestShellSimple.test_pipeline_2"
+# cat include/queue.h | cat | grep LIST | cat | wc -l
+46
+# exit
+
+>>> Test: "TestShellSimple.test_pipeline_3"
+# cat < include/queue.h | grep LIST | wc -l > /tmp/tmp_vmr1kix
+# exit
+
+>>> Test: "TestShellSimple.test_redir_1"
+# wc -l include/queue.h >/tmp/tmpjfkb7znd
+# wc -l < include/queue.h
+587
+# wc -l < include/queue.h >/tmp/tmp8m0z1fmb
+# exit
+
+>>> Test: "TestShellSimple.test_redir_2"
+# wc -l /tmp/tmpimt16dfr >/tmp/tmplpyeg2qo
+# exit
+
+>>> Test: "TestShellSimple.test_resume_suspended"
+# cat &
+[1] running 'cat'
+# jobs
+[1] suspended 'cat'
+# fg
+continue 'cat'
+jobs
